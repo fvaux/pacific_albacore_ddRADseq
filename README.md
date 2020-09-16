@@ -17,7 +17,7 @@ Ped and map files used by plink to estimate loci in LD.
 Maps used to select subsets of individuals for estimating HWP.
 
 # R
-R files for running loci filtering and population genetic analyses (e.g. whoa, adegenet, fsthet). Recommmend viewing original source github pages and tutorials noted in each R file credits.
+R files for running loci filtering and population genetic analyses (e.g. whoa, adegenet, fsthet). Recommmend viewing original source GitHub pages and tutorials noted in each R file credits.
 
 # Sampling, and genotype and loci fasta files
 Sampling and sequence spreadsheets, genetic data (vcf, genepop, and structure genotype files, and the fasta consensus file for the 84 putatively adaptive loci), and full results for genome scan program and Fst analyses are available from Dryad: 
