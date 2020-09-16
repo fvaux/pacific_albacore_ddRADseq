@@ -1,0 +1,608 @@
+###****~~~~~~~~~~~~~UNPACKING AND PROCESS RADTAGS~~~~~~~~~~~~~****###
+ssh harold
+tcsh
+
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RAW_READS/albacore/GBS0187
+gunzip lane1-s001-index--GBS0187_S1_L001_R1_001.fastq.gz
+gunzip lane1-s001-index--GBS0187_S1_L001_R2_001.fastq.gz
+
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RAW_READS/albacore/GBS0191
+gunzip lane1-s001-index--GBS0191_S1_L001_R1_001.fastq.gz
+gunzip lane1-s001-index--GBS0191_S1_L001_R2_001.fastq.gz
+
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RAW_READS/albacore/GBS0196
+gunzip lane2-s002-index--GBS0196_S2_L002_R1_001.fastq.gz
+gunzip lane2-s002-index--GBS0196_S2_L002_R2_001.fastq.gz
+
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RAW_READS/albacore/GBS0223
+gunzip lane1-s001-index--GBS0223_S1_L001_R1_001.fastq.gz
+gunzip lane1-s001-index--GBS0223_S1_L001_R2_001.fastq.gz
+
+exit
+
+#Process RADtags IN STACKS
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/paired/albacore/process_radtags_logs
+
+##ALBACORE PLATE1
+SGE_Batch -q harold -P 15 -c '/local/cluster/stacks/stacks-2.411/bin/process_radtags -p /nfs1/FW_HMSC/OMalley_Lab/vauxf/RAW_READS/albacore/GBS0187 -P -i fastq -b /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/barcodes/albacore/barcode_albacore_p1-p -o /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/paired/albacore/GBS0187 -c -q -inline_inline --renz_1 pstI --renz_2 sphI -E phred33 -r' -r albacore-p1-p-log
+
+##ALBACORE PLATE2
+SGE_Batch -q harold -P 15 -c '/local/cluster/stacks/stacks-2.411/bin/process_radtags -p /nfs1/FW_HMSC/OMalley_Lab/vauxf/RAW_READS/albacore/GBS0191 -P -i fastq -b /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/barcodes/albacore/barcode_albacore_p2-p -o /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/paired/albacore/GBS0191 -c -q -inline_inline --renz_1 pstI --renz_2 sphI -E phred33 -r' -r albacore-p2-p-log
+
+##ALBACORE PLATE3
+SGE_Batch -q harold -P 15 -c '/local/cluster/stacks/stacks-2.411/bin/process_radtags -p /nfs1/FW_HMSC/OMalley_Lab/vauxf/RAW_READS/albacore/GBS0196 -P -i fastq -b /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/barcodes/albacore/barcode_albacore_p3-p -o /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/paired/albacore/GBS0196 -c -q -inline_inline --renz_1 pstI --renz_2 sphI -E phred33 -r' -r albacore-p3-p-log
+
+##ALBACORE PLATE4
+SGE_Batch -q harold -P 30 -c '/local/cluster/stacks/stacks-2.411/bin/process_radtags -p /nfs1/FW_HMSC/OMalley_Lab/vauxf/RAW_READS/albacore/GBS0223 -P -i fastq -b /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/barcodes/albacore/barcode_albacore_p4-p -o /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/paired/albacore/GBS0223 -c -q -inline_inline --renz_1 pstI --renz_2 sphI -E phred33 -r' -r albacore-p4-p-log
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+
+###****~~~~~~~~~~~~~BWA - REFERENCE MAPPING~~~~~~~~~~~~~****###
+##Unpacking reference genomes
+#ALBA ORI (Pacific bluefin tuna)
+gunzip GCA_000418415_Thunnus_orientalis.fna.gz
+
+#ALBA THY (Atlantic bluefin tuna)
+gunzip GCA_003231725_GBYP_Tthy.fna.gz
+
+#ALBA ALB (Yellowfin tuna)
+gunzip GCA_900302625_ASM90030262v1.fna.gz
+
+#BWA index reference genomes
+#ALBA ORI
+bwa index /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/GCA_000418415_Thunnus_orientalis.fna
+
+#ALBA THY
+bwa index /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/GCA_003231725_GBYP_Tthy.fna
+
+#ALBA ALB
+bwa index /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/GCA_900302625_ASM90030262v1.fna
+
+##BWA MEM and SAMTOOLS - MAPPING DEMULTIPLEXED READS TO REFERENCE GENOME
+#ALBA ORI (mapping reads)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all
+chmod +x /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all/alba-pass-bwa-ori3.sh
+dos2unix /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all/alba-pass-bwa-ori3.sh
+SGE_Batch -q chinook -P 10 -f 30G -m 36G -c ' /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all/alba-pass-bwa-ori3.sh' -r alba-pass-bwa-ori3-sh
+
+#ALBA ORI UNMAPPED (retrieving unmapped reads)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all
+chmod +x /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all/alba-unmapped1.sh
+dos2unix /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all/alba-unmapped1.sh
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c ' /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all/alba-unmapped1.sh' -r alba-unmapped1
+
+#ALBA ORI FLAGSTATS (getting mapping statistics)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all
+chmod +x /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all/alba-flagstat1.sh
+dos2unix /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all/alba-flagstat1.sh
+SGE_Batch -q chinook -P 1 -f 30G -m 36G -c ' /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all/alba-flagstat1.sh' -r alba-flagstat1
+
+#ALBA THY (mapping reads)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all
+chmod +x /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all/alba-pass-bwa-thy2.sh
+dos2unix /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all/alba-pass-bwa-thy2.sh
+SGE_Batch -q otter -P 10 -f 30G -m 36G -c ' /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all/alba-pass-bwa-thy2.sh' -r alba-pass-bwa-thy2-sh
+
+#ALBA THY UNMAPPED (retrieving unmapped reads)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all
+chmod +x /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all/alba-unmapped1.sh
+dos2unix /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all/alba-unmapped1.sh
+SGE_Batch -q chinook -P 15 -f 30G -m 36G -c ' /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all/alba-unmapped1.sh' -r alba-unmapped1
+
+#ALBA THY FLAGSTATS (getting mapping statistics)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all
+chmod +x /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all/alba-flagstat1.sh
+dos2unix /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all/alba-flagstat1.sh
+SGE_Batch -q chinook -P 1 -f 30G -m 36G -c ' /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/thy-all/alba-flagstat1.sh' -r alba-flagstat1
+
+#ALBA ALB (mapping reads)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all
+chmod +x /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all/alba-pass-bwa-alb2.sh
+dos2unix /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all/alba-pass-bwa-alb2.sh
+SGE_Batch -q chinook -P 10 -f 30G -m 36G -c ' /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all/alba-pass-bwa-alb2.sh' -r alba-pass-bwa-alb2-sh
+
+#ALBA ALB UNMAPPED (retrieving unmapped reads)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all
+chmod +x /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all/alba-unmapped1.sh
+dos2unix /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all/alba-unmapped1.sh
+SGE_Batch -q otter -P 15 -f 30G -m 36G -c ' /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all/alba-unmapped1.sh' -r alba-unmapped1
+
+#ALBA ALB FLAGSTATS (getting mapping statistics)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all
+chmod +x /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all/alba-flagstat1.sh
+dos2unix /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all/alba-flagstat1.sh
+SGE_Batch -q chinook -P 1 -f 30G -m 36G -c ' /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/alb-all/alba-flagstat1.sh' -r alba-flagstat1
+
+##BWA MEM - MAPPING OTHER SEQUENCE DATA TO REFERENCE GENOME
+#89 ANDERSON OUTLIER LOCI
+ssh harold
+tcsh
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-anderson
+
+bwa mem GCA_000418415_Thunnus_orientalis.fna Anderson-LUPS1.fq > Anderson-LUPS1-Ori-aln.sam
+bwa mem GCA_000418415_Thunnus_orientalis.fna Anderson-LUPS1-TRIM.fq > Anderson-LUPS1-TRIM-Ori-aln.sam
+
+exit
+
+#SUDA PACIFIC BLUEFIN SEX PRIMERS
+ssh harold
+tcsh
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-sexprimers
+
+bwa mem GCA_000418415_Thunnus_orientalis.fna SudaSexPrimers1.fq > SudaSexPrimers1-Ori-aln.sam
+bwa mem GCA_000418415_Thunnus_orientalis.fna SudaSexPrimers1-rev.fq > SudaSexPrimers1-rev-Ori-aln.sam
+
+exit
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+
+
+###****~~~~~~~~~~~~~STACKS - REF MAP.PL~~~~~~~~~~~~~****###
+#ORI PAC 1
+##ori-pac-1-p12-r90
+##ori-pac-1 with 12 sample areas
+#308 individuals
+#Pacific bluefin tuna reference genome
+#populations: -r 0.9 -p 12 --min_maf 0.05, no blacklist for PSVs or LD loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1
+SGE_Batch -q chinook -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/ref_map.pl -T 30 -o /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1 --popmap /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-sites-bam4.txt --samples /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-all -X "populations: -r 0.9 -p 12 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_loci --fasta_samples"' -r ori-pac-1
+
+##ori-pac-1-p12-r90-a2
+##ori-pac-1 with 12 sample sites with minimum allele count (10)
+#308 individuals
+#populations: -r 0.9 -p 12 --min_maf 0.05, WITH blacklist for LD, PSVs, low coverage depth loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1/ori-pac-1-p12-r90-a2
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-sites-bam4.txt -B /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/blacklists/albacore/ori-pac-1-p12-r90-PSV-LD-C1.blacklist -r 0.9 -p 12 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r ori-pac-1-p12-r90-a2
+
+##ori-pac-1-p12-r90-a3
+##ori-pac-1 with 12 sample sites with minimum allele count (10)
+#308 individuals
+#populations: -r 0.9 -p 12 --min_maf 0.05, WITH blacklist for LD, PSVs, low coverage depth loci, AND coverage depth outliers
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1/ori-pac-1-p12-r90-a3
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-sites-bam4.txt -B /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/blacklists/albacore/ori-pac-1-p12-r90-PSV-LD-C2.blacklist -r 0.9 -p 12 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r ori-pac-1-p12-r90-a3
+
+##ori-pac-1-p2-r95-a
+##ori-pac-1 with 12 sample sites with minimum allele count (10)
+#308 individuals
+#populations: -r 0.95 -p 12 --min_maf 0.05, WITH blacklist for LD, PSVs, low coverage depth loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1/ori-pac-1-p2-r95-a
+SGE_Batch -q chinook -P 25 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 25 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-2P-bam1.txt -r 0.95 -p 2 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r ori-pac-1-p2-r95-a
+
+##ori-pac-1-p2-r95-a2
+##ori-pac-1 with 12 sample sites with minimum allele count (10)
+#308 individuals
+#populations: -r 0.95 -p 12 --min_maf 0.05, WITH blacklist for LD, PSVs, low coverage depth loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1/ori-pac-1-p2-r95-a2
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-2P-bam1.txt -B /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/blacklists/albacore/ori-pac-1-p2-r95-PSV-LD-C1.blacklist -r 0.95 -p 2 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r ori-pac-1-p2-r95-a2
+
+##ori-pac-1-p2-r95-a3
+##ori-pac-1 with 12 sample sites with minimum allele count (10)
+#308 individuals
+#populations: -r 0.95 -p 12 --min_maf 0.05, WITH blacklist for LD, PSVs, low coverage depth loci, AND coverage depth outliers
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1/ori-pac-1-p2-r95-a3
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-2P-bam1.txt -B /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/blacklists/albacore/ori-pac-1-p2-r95-PSV-LD-C2.blacklist -r 0.95 -p 2 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r ori-pac-1-p2-r95-a3
+
+##ori-pac-1-nc2-r95-a
+##nc-sex1 with males and females
+#54 individuals
+#populations: -r 0.95 -p 2 --min_maf 0.05, WITH BLACKLIST for PSVs or LD loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1/ori-pac-1-nc2-r95-a
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/nc-sex-bam2.txt -r 0.95 -p 2 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r ori-pac-1-nc2-r95-a
+
+##ori-pac-1-nc2-r95-a
+##nc-sex1 with males and females
+#54 individuals
+#populations: -r 0.95 -p 2 --min_maf 0.05, WITH blacklist for LD, PSVs, low coverage depth loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1/ori-pac-1-nc2-r95-a2
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/nc-sex-bam2.txt -B /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/blacklists/albacore/ori-pac-1-nc2-r95-PSV-LD-C1.blacklist -r 0.95 -p 2 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r ori-pac-1-nc2-r95-a2
+
+##ori-pac-1-nc2-r95-a
+##nc-sex1 with males and females
+#54 individuals
+#populations: -r 0.95 -p 2 --min_maf 0.05, WITH blacklist for LD, PSVs, low coverage depth loci, AND coverage depth outliers
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1/ori-pac-1-nc2-r95-a3
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/nc-sex-bam2.txt -B /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/blacklists/albacore/ori-pac-1-nc2-r95-PSV-LD-C2.blacklist -r 0.95 -p 2 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r ori-pac-1-nc2-r95-a3
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+
+
+###****~~~~~~~~~~~~~STACKS - DE NOVO.PL~~~~~~~~~~~~~****###
+#DE NOVO ORI 1
+##dn-pac-1-p12-r90-a
+##Unmapped (ORI) with 12 sample sites
+#308 individuals
+#ustacks: -m 3 -M 2 --model_type bounded --bound_high 0.05
+#cstacks: -n 1
+#populations: -r 0.9 -p 12 --min_maf 0.05, no blacklist for PSVs or LD loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/dn-pac-1
+SGE_Batch -q chinook -P 15 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/denovo_map.pl -T 15 -o /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/dn-pac-1 --popmap /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-sites-denovo1.txt --samples /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/paired/albacore/all --paired -X "ustacks: -m 3 -M 2 --model_type bounded --bound_high 0.05" -X "cstacks:-n 1" -X "populations: -r 0.9 -p 12 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_loci --fasta_samples"' -r dn-pac-1-p12-r90-a
+
+##dn-pac-1-p12-r90-a2
+##Unmapped (ORI) with 12 sample sites
+#308 individuals
+#ustacks: -m 3 -M 2 --model_type bounded --bound_high 0.05
+#cstacks: -n 1
+#populations: -r 0.9 -p 12 --min_maf 0.05, WITH blacklist for LD, PSVs, low coverage depth loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/dn-pac-1/dn-pac-1-p12-r90-a2
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/dn-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-sites-denovo1.txt -B /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/blacklists/albacore/dn-pac-1-p12-r90-PSV-LD-C1.blacklist -r 0.9 -p 12 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r dn-pac-1-p12-r90-a2
+
+##dn-pac-1-p12-r90-a3
+##Unmapped (ORI) with 12 sample sites
+#308 individuals
+#ustacks: -m 3 -M 2 --model_type bounded --bound_high 0.05
+#cstacks: -n 1
+#populations: -r 0.9 -p 12 --min_maf 0.05, WITH blacklist for LD, PSVs, low coverage depth loci, AND coverage depth outliers
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/dn-pac-1/dn-pac-1-p12-r90-a3
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/dn-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-sites-denovo1.txt -B /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/blacklists/albacore/dn-pac-1-p12-r90-PSV-LD-C2.blacklist -r 0.9 -p 12 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r dn-pac-1-p12-r90-a3
+
+#UNMAPPED ORI READS 1
+##un-pac-1-p12-r90-a
+##Unmapped (ORI) with 12 sample sites
+#308 individuals
+#ustacks: -m 3 -M 2 --model_type bounded --bound_high 0.05
+#cstacks: -n 1
+#populations: -r 0.9 -p 12 --min_maf 0.05, no blacklist for PSVs or LD loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/un-pac-1
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/denovo_map.pl -T 30 -o /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/un-pac-1 --popmap /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-sites-bam-un2.txt --samples /nfs1/FW_HMSC/OMalley_Lab/vauxf/BWA/albacore/samfiles/ori-unmap --paired -X "ustacks: -m 3 -M 2 --model_type bounded --bound_high 0.05" -X "cstacks:-n 1" -X "populations: -r 0.9 -p 12 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_loci --fasta_samples"' -r un-pac-1-a
+
+##un-pac-1-p12-r50-a
+##Unmapped (ORI) reads with 12 sample sites
+#308 individuals
+#populations: -r 0.5 -p 12 --min_maf 0.05, no blacklist for PSVs or LD loci
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/un-pac-1/un-pac-1-p12-r50-a
+SGE_Batch -q harold -P 30 -f 30G -m 36G -c '/local/cluster/stacks/stacks-2.41/bin/populations -t 30 -P /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/un-pac-1 -M /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/population_maps/albacore/12-sites-bam-un2.txt -r 0.5 -p 12 --min_maf 0.05 --write_single_snp --structure --fstats --fst_correction bonferroni_win --genepop --plink --vcf --hzar --fasta_samples --fasta_loci' -r un-pac-1-p12-r50-a
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+###****~~~~~~~~~~~~~PARALOG-FINDER (HDPLOT SCRIPT) FOR PSV IDENTIFICATION~~~~~~~~~~~~~****###
+ssh harold
+tcsh
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RHAROLD/HDPlot/Albacore
+
+##STACKS 2.411 (PAIRED-END)
+#ori-pac-1-p12-r90-a
+HDplot_process_vcf.py  -i ori-pac-1-p12-r90-a.vcf
+HDplot_graphs.R -i ori-pac-1-p12-r90-a.depthsBias
+blacklist_paralogs.py -i ori-pac-1-p12-r90-a.depthsBias
+
+#ori-pac-1-p2-r95-a
+HDplot_process_vcf.py  -i ori-pac-1-p2-r95-a.vcf
+HDplot_graphs.R -i ori-pac-1-p2-r95-a.depthsBias
+blacklist_paralogs.py -i ori-pac-1-p2-r95-a.depthsBias
+
+#ori-pac-1-nc2-r95-a
+HDplot_process_vcf.py  -i ori-pac-1-nc2-r95-a.vcf
+HDplot_graphs.R -i ori-pac-1-nc2-r95-a.depthsBias
+blacklist_paralogs.py -i ori-pac-1-nc2-r95-a.depthsBias
+
+#dn-pac-1-p12-r90-a
+#Manually change ID column in VCF file to be a combination of the CHROM and POS columns
+#(is empty '.' for Stacks2 denovo)
+HDplot_process_vcf.py  -i dn-pac-1-p12-r90-a-MOD2.vcf
+HDplot_graphs.R -i dn-pac-1-p12-r90-a-MOD2.depthsBias
+blacklist_paralogs.py -i dn-pac-1-p12-r90-a-MOD2.depthsBias
+
+exit
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+###****~~~~~~~~~~~~~PLINK FOR LD~~~~~~~~~~~~~****###
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RHAROLD/PLINK/Albacore
+
+#ori-pac-1-p12-r90-a
+SGE_Batch -q harold -c 'plink --file ori-pac-1-p12-r90-a-PAC.plink --r2 --ld-window-r2 0.8 --out ori-pac-1-p12-r90-a-PAC-ld --allow-extra-chr' -r ori-pac-1-p12-r90-a-PAC-ld
+
+#ori-pac-1-p12-r90-a
+SGE_Batch -q harold -c 'plink --file ori-pac-1-p2-r95-a-N.plink --r2 --ld-window-r2 0.8 --out ori-pac-1-p2-r95-a-N-ld --allow-extra-chr' -r ori-pac-1-p2-r95-a-N-ld
+SGE_Batch -q harold -c 'plink --file ori-pac-1-p2-r95-a-S.plink --r2 --ld-window-r2 0.8 --out ori-pac-1-p2-r95-a-S-ld --allow-extra-chr' -r ori-pac-1-p2-r95-a-S-ld
+
+#ori-pac-1-nc2-r95-a
+SGE_Batch -q harold -c 'plink --file ori-pac-1-nc2-r95-a-M.plink --r2 --ld-window-r2 0.8 --out ori-pac-1-nc2-r95-a-M-ld --allow-extra-chr' -r ori-pac-1-nc2-r95-a-M-ld
+SGE_Batch -q harold -c 'plink --file ori-pac-1-nc2-r95-a-F.plink --r2 --ld-window-r2 0.8 --out ori-pac-1-nc2-r95-a-F-ld --allow-extra-chr' -r ori-pac-1-nc2-r95-a-F-ld
+SGE_Batch -q harold -c 'plink --file ori-pac-1-nc2-r95-a-NC.plink --r2 --ld-window-r2 0.8 --out ori-pac-1-nc2-r95-a-NC-ld --allow-extra-chr' -r ori-pac-1-nc2-r95-a-NC-ld
+
+#dn-pac-1-p12-r90-a
+SGE_Batch -q harold -c 'plink --file dn-pac-1-p12-r90-a-PAC.plink --r2 --ld-window-r2 0.8 --out dn-pac-1-p12-r90-a-PAC-ld --allow-extra-chr' -r dn-pac-1-p12-r90-a-PAC-ld
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+###****~~~~~~~~~~~~~VCFTOOLS FOR HWE~~~~~~~~~~~~~****###
+#RUNS POPULATIONS SEPARATELY USING MAP .TXT FILES
+ssh harold
+tcsh
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RHAROLD/vcftools/Albacore
+
+#ori-pac-1-p12-r90-a
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-BA --keep 12-sites-bam4-BA.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-CS --keep 12-sites-bam4-CS.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-CN --keep 12-sites-bam4-CN.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-OR --keep 12-sites-bam4-OR.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-WA --keep 12-sites-bam4-WA.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-BC --keep 12-sites-bam4-BC.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-HW --keep 12-sites-bam4-HW.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-HN --keep 12-sites-bam4-HN.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-JP --keep 12-sites-bam4-JP.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-PH --keep 12-sites-bam4-PH.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-NC --keep 12-sites-bam4-NC.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p12-r90-a.vcf --hardy --out ori-pac-1-p12-r90-a-TS --keep 12-sites-bam4-TS.txt --hwe 0.05
+
+#ori-pac-1-p2-r95-a
+vcftools --vcf ori-pac-1-p2-r95-a.vcf --hardy --out ori-pac-1-p2-r95-a-NP --keep 12-2P-bam1-NP.txt --hwe 0.05
+vcftools --vcf ori-pac-1-p2-r95-a.vcf --hardy --out ori-pac-1-p2-r95-a-SP --keep 12-2P-bam1-SP.txt --hwe 0.05
+
+#ori-pac-1-nc2-r95-a
+vcftools --vcf ori-pac-1-nc2-r95-a.vcf --hardy --out ori-pac-1-nc2-r95-a-M --keep nc-sex-bam2-M.txt --hwe 0.05
+vcftools --vcf ori-pac-1-nc2-r95-a.vcf --hardy --out ori-pac-1-nc2-r95-a-F --keep nc-sex-bam2-F.txt --hwe 0.05
+
+#dn-pac-1-p12-r90-a
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-BA --keep 12-sites-bam4-BA.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-CS --keep 12-sites-bam4-CS.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-CN --keep 12-sites-bam4-CN.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-OR --keep 12-sites-bam4-OR.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-WA --keep 12-sites-bam4-WA.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-BC --keep 12-sites-bam4-BC.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-HW --keep 12-sites-bam4-HW.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-HN --keep 12-sites-bam4-HN.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-JP --keep 12-sites-bam4-JP.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-PH --keep 12-sites-bam4-PH.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-NC --keep 12-sites-bam4-NC.txt --hwe 0.05
+vcftools --vcf dn-pac-1-p12-r90-a.vcf --hardy --out dn-pac-1-p12-r90-a-TS --keep 12-sites-bam4-TS.txt --hwe 0.05
+
+exit
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+###****~~~~~~~~~~~~~FILTERING FOR LOW COVERAGE DEPTH LOCI~~~~~~~~~~~~~****###
+#ori-pac-1-p12-r90-a
+SGE_Batch -q otter -c 'vcftools --vcf ori-pac-1-p12-r90-a.vcf --minDP 10 --recode --out ori-pac-1-p12-r90-a-F.vcf' -r ori-pac-1-p12-r90-a1
+#rename output to F
+SGE_Batch -q harold -c 'vcftools --vcf ori-pac-1-p12-r90-a-F.vcf --max-missing .8 --recode --out ori-pac-1-p12-r90-a-F2.vcf' -r ori-pac-1-p12-r90-a2
+#rename output to F2
+diff ori-pac-1-p12-r90-a-F.vcf ori-pac-1-p12-r90-a-F2.vcf | grep -v "^#" | cut -f1-3 > blacklist-p12-90.txt
+
+#ori-pac-1-p2-r95-a
+SGE_Batch -q otter -c 'vcftools --vcf ori-pac-1-p2-r95-a.vcf --minDP 10 --recode --out ori-pac-1-p2-r95-a-F.vcf' -r ori-pac-1-p2-r95-a1
+#rename output to F
+SGE_Batch -q harold -c 'vcftools --vcf ori-pac-1-p2-r95-a-F.vcf --max-missing .8 --recode --out ori-pac-1-p2-r95-a-F2.vcf' -r ori-pac-1-p2-r95-a2
+#rename output to F2
+diff ori-pac-1-p2-r95-a-F.vcf ori-pac-1-p2-r95-a-F2.vcf | grep -v "^#" | cut -f1-3 > blacklist-p2-95.txt
+
+#ori-pac-1-nc2-r95-a
+SGE_Batch -q otter -c 'vcftools --vcf ori-pac-1-nc2-r95-a.vcf --minDP 10 --recode --out ori-pac-1-nc2-r95-a-F.vcf' -r ori-pac-1-nc2-r95-a1
+#rename output to F
+SGE_Batch -q harold -c 'vcftools --vcf ori-pac-1-nc2-r95-a-F.vcf --max-missing .8 --recode --out ori-pac-1-nc2-r95-a-F2.vcf' -r ori-pac-1-nc2-r95-a2
+#rename output to F2
+diff ori-pac-1-nc2-r95-a-F.vcf ori-pac-1-nc2-r95-a-F2.vcf | grep -v "^#" | cut -f1-3 > blacklist-nc2-95.txt
+
+#dn-pac-1-p12-r90-a
+SGE_Batch -q otter -c 'vcftools --vcf dn-pac-1-p12-r90-a.vcf --minDP 10 --recode --out dn-pac-1-p12-r90-a-F.vcf' -r dn-pac-1-p12-r90-a1
+#rename output to F
+SGE_Batch -q harold -c 'vcftools --vcf dn-pac-1-p12-r90-a-F.vcf --max-missing .8 --recode --out dn-pac-1-p12-r90-a-F2.vcf' -r dn-pac-1-p12-r90-a2
+#rename output to F2
+diff dn-pac-1-p12-r90-a-F.vcf dn-pac-1-p12-r90-a-F2.vcf | grep -v "^#" | cut -f1-3 > blacklist-p12-90.txt
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+###****~~~~~~~~~~~~~GREP FOR FINDING LOCUS INFORMATION FOR OUTLIER LOCI IN VCF FILES~~~~~~~~~~~~~****###
+#Find outlier loci details
+#In excel, add Xlociorder#Y as first column, save new vcf
+#Use grep to extract outlier loci IDs from vcf
+ssh harold
+tcsh
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RHAROLD/R
+
+#ori-pac-1-p12-r90-a3 12 SAMPLE AREAS
+grep 'X161F\|X168F\|X171F\|X185F\|X187F\|X188F\|X189F\|X1004F\|X1219F\|X1220F\|X1298F\|X1499F\|X2217F\|X2218F\|X3201F\|X3259F\|X3481F\|X3729F\|X3730F\|X4488F\|X4798F\|X4838F\|X4849F\|X4887F\|X4979F\|X5282F\|X5297F\|X5298F\|X5443F\|X5523F\|X6044F\|X6434F' ori-pac-1-p12-r90-a3-t.vcf > ori-pac-1-p12-r90-a3-t-out.vcf
+
+#ori-pac-1-p12-r90-a3 12 SAMPLE AREAS (all loci)
+grep 'X11F\|X25F\|X76F\|X93F\|X128F\|X129F\|X136F\|X138F\|X144F\|X145F\|X148F\|X151F\|X161F\|X162F\|X165F\|X167F\|X168F\|X169F\|X170F\|X171F\|X172F\|X178F\|X185F\|X187F\|X188F\|X189F\|X196F\|X222F\|X224F\|X230F\|X252F\|X267F\|X270F\|X321F\|X369F\|X374F\|X401F\|X408F\|X414F\|X416F\|X418F\|X429F\|X430F\|X445F\|X478F\|X517F\|X519F\|X527F\|X534F\|X544F\|X545F\|X562F\|X563F\|X588F\|X600F\|X602F\|X610F\|X625F\|X631F\|X634F\|X639F\|X641F\|X652F\|X659F\|X663F\|X691F\|X699F\|X713F\|X733F\|X736F\|X746F\|X787F\|X829F\|X832F\|X845F\|X896F\|X898F\|X903F\|X920F\|X934F\|X939F\|X957F\|X960F\|X967F\|X983F\|X987F\|X999F\|X1003F\|X1004F\|X1005F\|X1006F\|X1008F\|X1019F\|X1057F\|X1068F\|X1083F\|X1099F\|X1113F\|X1130F\|X1146F\|X1168F\|X1194F\|X1219F\|X1220F\|X1221F\|X1225F\|X1234F\|X1246F\|X1288F\|X1298F\|X1338F\|X1339F\|X1389F\|X1397F\|X1399F\|X1407F\|X1422F\|X1428F\|X1429F\|X1479F\|X1495F\|X1499F\|X1500F\|X1506F\|X1521F\|X1529F\|X1548F\|X1557F\|X1559F\|X1560F\|X1566F\|X1583F\|X1584F\|X1594F\|X1598F\|X1606F\|X1634F\|X1652F\|X1686F\|X1732F\|X1793F\|X1803F\|X1839F\|X1874F\|X1908F\|X1944F\|X1950F\|X1994F\|X2009F\|X2026F\|X2035F\|X2057F\|X2116F\|X2133F\|X2160F\|X2191F\|X2201F\|X2210F\|X2216F\|X2217F\|X2218F\|X2222F\|X2251F\|X2273F\|X2281F\|X2285F\|X2290F\|X2294F\|X2313F\|X2320F\|X2324F\|X2335F\|X2371F\|X2395F\|X2396F\|X2421F\|X2423F\|X2510F\|X2517F\|X2547F\|X2556F\|X2587F\|X2628F\|X2640F\|X2660F\|X2669F\|X2678F\|X2734F\|X2742F\|X2765F\|X2792F\|X2802F\|X2803F\|X2813F\|X2831F\|X2836F\|X2855F\|X2861F\|X2868F\|X2878F\|X2907F\|X2941F\|X2955F\|X2966F\|X2983F\|X2996F\|X3007F\|X3024F\|X3025F\|X3027F\|X3056F\|X3059F\|X3069F\|X3104F\|X3111F\|X3140F\|X3154F\|X3164F\|X3172F\|X3177F\|X3181F\|X3189F\|X3201F\|X3228F\|X3235F\|X3259F\|X3282F\|X3372F\|X3385F\|X3386F\|X3405F\|X3409F\|X3412F\|X3424F\|X3430F\|X3460F\|X3481F\|X3484F\|X3550F\|X3555F\|X3565F\|X3568F\|X3590F\|X3592F\|X3635F\|X3643F\|X3687F\|X3705F\|X3715F\|X3729F\|X3730F\|X3739F\|X3750F\|X3848F\|X3870F\|X3871F\|X3879F\|X3889F\|X3902F\|X3904F\|X3906F\|X3937F\|X3966F\|X3971F\|X3973F\|X4029F\|X4042F\|X4050F\|X4056F\|X4075F\|X4094F\|X4114F\|X4127F\|X4149F\|X4161F\|X4184F\|X4244F\|X4254F\|X4304F\|X4310F\|X4318F\|X4374F\|X4376F\|X4424F\|X4471F\|X4488F\|X4492F\|X4496F\|X4512F\|X4537F\|X4557F\|X4558F\|X4560F\|X4563F\|X4578F\|X4585F\|X4592F\|X4633F\|X4663F\|X4707F\|X4743F\|X4776F\|X4798F\|X4799F\|X4806F\|X4826F\|X4827F\|X4838F\|X4849F\|X4850F\|X4855F\|X4869F\|X4887F\|X4905F\|X4908F\|X4912F\|X4928F\|X4938F\|X4944F\|X4947F\|X4955F\|X4956F\|X4979F\|X4984F\|X4989F\|X4990F\|X4991F\|X4996F\|X4998F\|X5014F\|X5025F\|X5074F\|X5105F\|X5129F\|X5130F\|X5195F\|X5210F\|X5218F\|X5220F\|X5233F\|X5246F\|X5282F\|X5286F\|X5297F\|X5298F\|X5302F\|X5314F\|X5323F\|X5331F\|X5339F\|X5375F\|X5380F\|X5383F\|X5443F\|X5450F\|X5500F\|X5523F\|X5542F\|X5557F\|X5558F\|X5566F\|X5582F\|X5646F\|X5659F\|X5667F\|X5683F\|X5694F\|X5724F\|X5737F\|X5739F\|X5741F\|X5748F\|X5749F\|X5753F\|X5755F\|X5756F\|X5762F\|X5770F\|X5779F\|X5794F\|X5827F\|X5866F\|X5898F\|X5908F\|X5913F\|X5918F\|X5941F\|X5945F\|X5946F\|X5949F\|X5975F\|X5978F\|X5980F\|X5985F\|X5999F\|X6000F\|X6044F\|X6048F\|X6052F\|X6073F\|X6081F\|X6088F\|X6108F\|X6109F\|X6125F\|X6140F\|X6142F\|X6143F\|X6159F\|X6182F\|X6260F\|X6263F\|X6270F\|X6338F\|X6340F\|X6346F\|X6354F\|X6381F\|X6412F\|X6434F\|X4181F\|X6001F' ori-pac-1-p12-r90-a3-t.vcf > ori-pac-1-p12-r90-a3-t-all1.vcf
+
+#ori-pac-1-p12-r90-a3 NORTH VS SOUTH PACIFIC
+grep 'X161F\|X162F\|X167F\|X168F\|X170F\|X171F\|X172F\|X185F\|X187F\|X188F\|X189F\|X562F\|X563F\|X1003F\|X1004F\|X1005F\|X1219F\|X1220F\|X1298F\|X1499F\|X1500F\|X2217F\|X2218F\|X3201F\|X3259F\|X3405F\|X3481F\|X3729F\|X3730F\|X4149F\|X4488F\|X4798F\|X4838F\|X4849F\|X4850F\|X4928F\|X4979F\|X4998F\|X5210F\|X5282F\|X5297F\|X5298F\|X5443F\|X5523F\|X5659F\|X5739F\|X6044F\|X6434F' ori-pac-1-p12-r90-a3-t.vcf > ori-pac-1-p12-r90-a3-t-2P-out.vcf
+
+#ori-pac-1-p2-r95-a3 NORTH VS SOUTH PACIFIC
+grep 'X291Y\|X294Y\|X296Y\|X297Y\|X299Y\|X301Y\|X302Y\|X305Y\|X306Y\|X307Y\|X308Y\|X309Y\|X332Y\|X334Y\|X336Y\|X338Y\|X339Y\|X340Y\|X341Y\|X342Y\|X343Y\|X478Y\|X1048Y\|X1107Y\|X1108Y\|X1109Y\|X1989Y\|X1990Y\|X1991Y\|X1992Y\|X1993Y\|X2417Y\|X2418Y\|X2419Y\|X2595Y\|X2596Y\|X3017Y\|X3018Y\|X3917Y\|X4473Y\|X4474Y\|X5810Y\|X5811Y\|X5812Y\|X6418Y\|X6543Y\|X6807Y\|X6808Y\|X6809Y\|X6810Y\|X6961Y\|X6962Y\|X6963Y\|X7463Y\|X7465Y\|X8326Y\|X8327Y\|X8329Y\|X9030Y\|X9031Y\|X9651Y\|X9723Y\|X9728Y\|X9758Y\|X9760Y\|X9912Y\|X10028Y\|X10061Y\|X10441Y\|X10565Y\|X10585Y\|X10864Y\|X11020Y\|X11489Y\|X11498Y\|X11616Y\|X11617Y\|X11677Y\|X11808Y\|X11809Y\|X11939Y\|X12071Y\|X12707Y\|X12839Y' ori-pac-1-p2-r95-a3-t.vcf > ori-pac-1-p2-r95-a3-t-out.vcf
+
+#ori-pac-1-p2-r95-a3 NORTH VS SOUTH PACIFIC (all loci)
+grep 'X57Y\|X83Y\|X84Y\|X166Y\|X173Y\|X215Y\|X264Y\|X290Y\|X291Y\|X292Y\|X293Y\|X294Y\|X295Y\|X296Y\|X297Y\|X298Y\|X299Y\|X301Y\|X302Y\|X303Y\|X304Y\|X305Y\|X306Y\|X307Y\|X308Y\|X309Y\|X329Y\|X332Y\|X333Y\|X334Y\|X335Y\|X336Y\|X337Y\|X338Y\|X339Y\|X340Y\|X341Y\|X342Y\|X343Y\|X344Y\|X394Y\|X411Y\|X460Y\|X476Y\|X478Y\|X479Y\|X490Y\|X591Y\|X598Y\|X671Y\|X718Y\|X754Y\|X804Y\|X970Y\|X971Y\|X972Y\|X1048Y\|X1107Y\|X1108Y\|X1109Y\|X1113Y\|X1206Y\|X1218Y\|X1245Y\|X1314Y\|X1357Y\|X1392Y\|X1398Y\|X1518Y\|X1582Y\|X1609Y\|X1710Y\|X1780Y\|X1827Y\|X1845Y\|X1847Y\|X1868Y\|X1873Y\|X1988Y\|X1989Y\|X1990Y\|X1991Y\|X1992Y\|X1993Y\|X2015Y\|X2030Y\|X2086Y\|X2156Y\|X2256Y\|X2360Y\|X2417Y\|X2418Y\|X2419Y\|X2486Y\|X2586Y\|X2595Y\|X2596Y\|X2704Y\|X2748Y\|X2766Y\|X2799Y\|X2867Y\|X2876Y\|X2953Y\|X3011Y\|X3017Y\|X3018Y\|X3019Y\|X3101Y\|X3295Y\|X3346Y\|X3354Y\|X3390Y\|X3415Y\|X3460Y\|X3525Y\|X3533Y\|X3546Y\|X3658Y\|X3676Y\|X3677Y\|X3857Y\|X3873Y\|X3917Y\|X3969Y\|X4055Y\|X4096Y\|X4121Y\|X4148Y\|X4203Y\|X4209Y\|X4244Y\|X4252Y\|X4291Y\|X4310Y\|X4335Y\|X4341Y\|X4352Y\|X4355Y\|X4357Y\|X4473Y\|X4474Y\|X4523Y\|X4550Y\|X4564Y\|X4571Y\|X4575Y\|X4721Y\|X4760Y\|X4821Y\|X4951Y\|X4971Y\|X4972Y\|X4994Y\|X5060Y\|X5096Y\|X5098Y\|X5117Y\|X5243Y\|X5278Y\|X5285Y\|X5365Y\|X5415Y\|X5428Y\|X5615Y\|X5704Y\|X5706Y\|X5729Y\|X5742Y\|X5810Y\|X5811Y\|X5812Y\|X5864Y\|X5873Y\|X5881Y\|X5920Y\|X5981Y\|X6060Y\|X6089Y\|X6092Y\|X6200Y\|X6265Y\|X6309Y\|X6402Y\|X6405Y\|X6418Y\|X6438Y\|X6543Y\|X6545Y\|X6609Y\|X6615Y\|X6692Y\|X6697Y\|X6728Y\|X6774Y\|X6776Y\|X6807Y\|X6808Y\|X6809Y\|X6810Y\|X6839Y\|X6858Y\|X6961Y\|X6962Y\|X6963Y\|X6978Y\|X7009Y\|X7015Y\|X7018Y\|X7042Y\|X7047Y\|X7143Y\|X7201Y\|X7264Y\|X7299Y\|X7330Y\|X7359Y\|X7399Y\|X7434Y\|X7436Y\|X7463Y\|X7464Y\|X7465Y\|X7642Y\|X7652Y\|X7804Y\|X7874Y\|X7894Y\|X7966Y\|X8075Y\|X8090Y\|X8138Y\|X8222Y\|X8254Y\|X8257Y\|X8281Y\|X8290Y\|X8308Y\|X8322Y\|X8326Y\|X8327Y\|X8329Y\|X8403Y\|X8409Y\|X8410Y\|X8411Y\|X8431Y\|X8477Y\|X8487Y\|X8557Y\|X8616Y\|X8624Y\|X8699Y\|X8804Y\|X8811Y\|X8846Y\|X8945Y\|X8992Y\|X9027Y\|X9030Y\|X9031Y\|X9230Y\|X9256Y\|X9261Y\|X9271Y\|X9272Y\|X9280Y\|X9308Y\|X9343Y\|X9386Y\|X9411Y\|X9424Y\|X9474Y\|X9541Y\|X9549Y\|X9649Y\|X9651Y\|X9692Y\|X9723Y\|X9725Y\|X9728Y\|X9758Y\|X9760Y\|X9763Y\|X9775Y\|X9779Y\|X9813Y\|X9892Y\|X9912Y\|X9914Y\|X9916Y\|X9946Y\|X9964Y\|X9992Y\|X9996Y\|X10028Y\|X10031Y\|X10044Y\|X10050Y\|X10061Y\|X10102Y\|X10111Y\|X10118Y\|X10147Y\|X10235Y\|X10239Y\|X10267Y\|X10292Y\|X10314Y\|X10360Y\|X10391Y\|X10441Y\|X10485Y\|X10522Y\|X10565Y\|X10585Y\|X10587Y\|X10620Y\|X10651Y\|X10666Y\|X10674Y\|X10685Y\|X10714Y\|X10734Y\|X10743Y\|X10775Y\|X10828Y\|X10864Y\|X10901Y\|X10989Y\|X11020Y\|X11024Y\|X11032Y\|X11042Y\|X11130Y\|X11216Y\|X11221Y\|X11232Y\|X11249Y\|X11258Y\|X11264Y\|X11320Y\|X11355Y\|X11385Y\|X11417Y\|X11439Y\|X11449Y\|X11469Y\|X11489Y\|X11498Y\|X11537Y\|X11578Y\|X11616Y\|X11617Y\|X11677Y\|X11724Y\|X11789Y\|X11808Y\|X11809Y\|X11867Y\|X11936Y\|X11939Y\|X11942Y\|X11949Y\|X12008Y\|X12016Y\|X12054Y\|X12071Y\|X12134Y\|X12172Y\|X12251Y\|X12263Y\|X12308Y\|X12503Y\|X12514Y\|X12569Y\|X12610Y\|X12707Y\|X12714Y\|X12757Y\|X12839Y\|X12840Y' ori-pac-1-p2-r95-a3-t.vcf > ori-pac-1-p2-r95-a3-t-all1.vcf
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+###****~~~~~~~~~~~~~VCF TOOLS FOR SEPARATING NEUTRAL AND ADAPTIVE LOCI IN VCF FILES~~~~~~~~~~~~~****###
+ssh harold
+tcsh
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RHAROLD/vcftools/Albacore
+
+#ori-pac-1-p12-r90-a3 12 SAMPLE AREAS
+vcftools --snps ori-pac-1-p12-r90-a3-out.txt --vcf ori-pac-1-p12-r90-a3.vcf --recode --out ori-pac-1-p12-r90-a3-ada.vcf
+vcftools --exclude ori-pac-1-p12-r90-a3-out.txt --vcf ori-pac-1-p12-r90-a3.vcf --recode --out ori-pac-1-p12-r90-a3-neu.vcf
+
+#ori-pac-1-p12-r90-a3 2 NORTH VS SOUTH PACIFIC
+vcftools --snps ori-pac-1-p12-r90-a3-2P-out.txt --vcf ori-pac-1-p12-r90-a3.vcf --recode --out ori-pac-1-p12-r90-a3-2P-ada.vcf
+vcftools --exclude ori-pac-1-p12-r90-a3-2P-out.txt --vcf ori-pac-1-p12-r90-a3.vcf --recode --out ori-pac-1-p12-r90-a3-2P-neu.vcf
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+###****~~~~~~~~~~~~~EXTRACT FASTA FILES FOR OUTLIER LOCI~~~~~~~~~~~~~****###
+ssh harold
+tcsh
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/RHAROLD/R
+
+#ori-pac-1-p2-r95-a3 NORTH VS SOUTH PACIFIC
+#Add X suffix to CLocus_123 (i.e. so that it is CLocus_123X)
+#CONSENSUS LOCI
+#altogether
+grep -A1 'CLocus_20427X\|CLocus_20527X\|CLocus_20599X\|CLocus_20615X\|CLocus_20690X\|CLocus_20744X\|CLocus_20747X\|CLocus_20860X\|CLocus_20875X\|CLocus_21082X\|CLocus_21085X\|CLocus_21159X\|CLocus_23419X\|CLocus_23616X\|CLocus_23804X\|CLocus_23873X\|CLocus_23881X\|CLocus_23901X\|CLocus_23907X\|CLocus_23943X\|CLocus_23913X\|CLocus_32568X\|CLocus_72459X\|CLocus_76427X\|CLocus_76445X\|CLocus_76448X\|CLocus_136651X\|CLocus_136659X\|CLocus_136762X\|CLocus_136715X\|CLocus_136806X\|CLocus_168829X\|CLocus_168842X\|CLocus_168960X\|CLocus_180600X\|CLocus_180651X\|CLocus_209756X\|CLocus_209758X\|CLocus_273473X\|CLocus_311916X\|CLocus_312047X\|CLocus_411695X\|CLocus_411712X\|CLocus_411755X\|CLocus_456853X\|CLocus_467913X\|CLocus_486918X\|CLocus_486922X\|CLocus_486925X\|CLocus_486956X\|CLocus_497213X\|CLocus_497206X\|CLocus_497233X\|CLocus_530671X\|CLocus_530738X\|CLocus_596455X\|CLocus_596492X\|CLocus_596521X\|CLocus_650709X\|CLocus_650743X\|CLocus_700010X\|CLocus_705793X\|CLocus_706224X\|CLocus_709045X\|CLocus_709117X\|CLocus_720069X\|CLocus_728748X\|CLocus_730808X\|CLocus_762062X\|CLocus_773756X\|CLocus_776235X\|CLocus_797025X\|CLocus_808993X\|CLocus_847830X\|CLocus_848274X\|CLocus_859583X\|CLocus_859594X\|CLocus_866549X\|CLocus_879444X\|CLocus_879461X\|CLocus_890951X\|CLocus_903361X\|CLocus_978375X\|CLocus_998124X' ori-pac-1-p2-r95-a3.loci.fa > ori-pac-1-p2-r95-a3.out.fa
+
+#separately
+grep	-A1	CLocus_20427X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_20427.fa
+grep	-A1	CLocus_20527X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_20527.fa
+grep	-A1	CLocus_20599X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_20599.fa
+grep	-A1	CLocus_20615X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_20615.fa
+grep	-A1	CLocus_20690X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_20690.fa
+grep	-A1	CLocus_20744X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_20744.fa
+grep	-A1	CLocus_20747X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_20747.fa
+grep	-A1	CLocus_20860X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_20860.fa
+grep	-A1	CLocus_20875X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_20875.fa
+grep	-A1	CLocus_21082X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_21082.fa
+grep	-A1	CLocus_21085X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_21085.fa
+grep	-A1	CLocus_21159X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_21159.fa
+grep	-A1	CLocus_23419X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_23419.fa
+grep	-A1	CLocus_23616X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_23616.fa
+grep	-A1	CLocus_23804X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_23804.fa
+grep	-A1	CLocus_23873X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_23873.fa
+grep	-A1	CLocus_23881X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_23881.fa
+grep	-A1	CLocus_23901X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_23901.fa
+grep	-A1	CLocus_23907X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_23907.fa
+grep	-A1	CLocus_23943X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_23943.fa
+grep	-A1	CLocus_23913X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_23913.fa
+grep	-A1	CLocus_32568X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_32568.fa
+grep	-A1	CLocus_72459X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_72459.fa
+grep	-A1	CLocus_76427X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_76427.fa
+grep	-A1	CLocus_76445X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_76445.fa
+grep	-A1	CLocus_76448X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_76448.fa
+grep	-A1	CLocus_136651X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_136651.fa
+grep	-A1	CLocus_136659X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_136659.fa
+grep	-A1	CLocus_136762X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_136762.fa
+grep	-A1	CLocus_136715X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_136715.fa
+grep	-A1	CLocus_136806X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_136806.fa
+grep	-A1	CLocus_168829X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_168829.fa
+grep	-A1	CLocus_168842X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_168842.fa
+grep	-A1	CLocus_168960X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_168960.fa
+grep	-A1	CLocus_180600X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_180600.fa
+grep	-A1	CLocus_180651X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_180651.fa
+grep	-A1	CLocus_209756X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_209756.fa
+grep	-A1	CLocus_209758X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_209758.fa
+grep	-A1	CLocus_273473X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_273473.fa
+grep	-A1	CLocus_311916X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_311916.fa
+grep	-A1	CLocus_312047X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_312047.fa
+grep	-A1	CLocus_411695X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_411695.fa
+grep	-A1	CLocus_411712X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_411712.fa
+grep	-A1	CLocus_411755X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_411755.fa
+grep	-A1	CLocus_456853X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_456853.fa
+grep	-A1	CLocus_467913X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_467913.fa
+grep	-A1	CLocus_486918X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_486918.fa
+grep	-A1	CLocus_486922X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_486922.fa
+grep	-A1	CLocus_486925X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_486925.fa
+grep	-A1	CLocus_486956X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_486956.fa
+grep	-A1	CLocus_497213X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_497213.fa
+grep	-A1	CLocus_497206X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_497206.fa
+grep	-A1	CLocus_497233X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_497233.fa
+grep	-A1	CLocus_530671X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_530671.fa
+grep	-A1	CLocus_530738X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_530738.fa
+grep	-A1	CLocus_596455X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_596455.fa
+grep	-A1	CLocus_596492X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_596492.fa
+grep	-A1	CLocus_596521X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_596521.fa
+grep	-A1	CLocus_650709X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_650709.fa
+grep	-A1	CLocus_650743X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_650743.fa
+grep	-A1	CLocus_700010X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_700010.fa
+grep	-A1	CLocus_705793X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_705793.fa
+grep	-A1	CLocus_706224X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_706224.fa
+grep	-A1	CLocus_709045X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_709045.fa
+grep	-A1	CLocus_709117X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_709117.fa
+grep	-A1	CLocus_720069X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_720069.fa
+grep	-A1	CLocus_728748X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_728748.fa
+grep	-A1	CLocus_730808X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_730808.fa
+grep	-A1	CLocus_762062X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_762062.fa
+grep	-A1	CLocus_773756X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_773756.fa
+grep	-A1	CLocus_776235X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_776235.fa
+grep	-A1	CLocus_797025X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_797025.fa
+grep	-A1	CLocus_808993X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_808993.fa
+grep	-A1	CLocus_847830X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_847830.fa
+grep	-A1	CLocus_848274X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_848274.fa
+grep	-A1	CLocus_859583X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_859583.fa
+grep	-A1	CLocus_859594X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_859594.fa
+grep	-A1	CLocus_866549X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_866549.fa
+grep	-A1	CLocus_879444X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_879444.fa
+grep	-A1	CLocus_879461X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_879461.fa
+grep	-A1	CLocus_890951X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_890951.fa
+grep	-A1	CLocus_903361X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_903361.fa
+grep	-A1	CLocus_978375X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_978375.fa
+grep	-A1	CLocus_998124X	ori-pac-1-p2-r95-a3.loci.fa	>	CLocus_998124.fa
+
+#per ind (will catch some extras)
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/STACKS/stacks_out/albacore/ori-pac-1/ori-pac-1-p2-r95-a3
+
+#Use the underscore already in loci samples file, no need to add X suffix
+grep -A1 'CLocus_20427_\|CLocus_20527_\|CLocus_20599_\|CLocus_20615_\|CLocus_20690_\|CLocus_20744_\|CLocus_20747_\|CLocus_20860_\|CLocus_20875_\|CLocus_21082_\|CLocus_21085_\|CLocus_21159_\|CLocus_23419_\|CLocus_23616_\|CLocus_23804_\|CLocus_23873_\|CLocus_23881_\|CLocus_23901_\|CLocus_23907_\|CLocus_23943_\|CLocus_23913_\|CLocus_32568_\|CLocus_72459_\|CLocus_76427_\|CLocus_76445_\|CLocus_76448_\|CLocus_136651_\|CLocus_136659_\|CLocus_136762_\|CLocus_136715_\|CLocus_136806_\|CLocus_168829_\|CLocus_168842_\|CLocus_168960_\|CLocus_180600_\|CLocus_180651_\|CLocus_209756_\|CLocus_209758_\|CLocus_273473_\|CLocus_311916_\|CLocus_312047_\|CLocus_411695_\|CLocus_411712_\|CLocus_411755_\|CLocus_456853_\|CLocus_467913_\|CLocus_486918_\|CLocus_486922_\|CLocus_486925_\|CLocus_486956_\|CLocus_497213_\|CLocus_497206_\|CLocus_497233_\|CLocus_530671_\|CLocus_530738_\|CLocus_596455_\|CLocus_596492_\|CLocus_596521_\|CLocus_650709_\|CLocus_650743_\|CLocus_700010_\|CLocus_705793_\|CLocus_706224_\|CLocus_709045_\|CLocus_709117_\|CLocus_720069_\|CLocus_728748_\|CLocus_730808_\|CLocus_762062_\|CLocus_773756_\|CLocus_776235_\|CLocus_797025_\|CLocus_808993_\|CLocus_847830_\|CLocus_848274_\|CLocus_859583_\|CLocus_859594_\|CLocus_866549_\|CLocus_879444_\|CLocus_879461_\|CLocus_890951_\|CLocus_903361_\|CLocus_978375_\|CLocus_998124_' ori-pac-1-p2-r95-a3b.samples.fa > ori-pac-1-p2-r95-a3.out-s.fa
+
+
+
+#~~~~~~~~~~~~~!!!!~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+###****~~~~~~~~~~~~~BLAST~~~~~~~~~~~~~****###
+ssh harold
+tcsh
+cd /nfs1/FW_HMSC/OMalley_Lab/vauxf/BLAST/albacore
+
+blastdbcmd -list $BLASTDB  
+
+#ori-pac-1-p2-r95-a3 NORTH VS SOUTH PACIFIC
+blastn -query ori-pac-1-p2-r95-a3.out2.fa -db nt -max_target_seqs 1 -max_hsps 1 -evalue 1e-6 -outfmt '7 qseqid sseqid length ql en slen qstat qend sstart send evalue' -out ori-pac-1-p2-r95-a3.out2-b1.txt -num_threads 4
+
+grep -A1 '# 1 hits found' ori-pac-1-p2-r95-a3.out2-b1.txt > hits.txt
+
+#73 Pacific bluefin contigs for ori-pac-1-p2-r95-a3 NORTH VS SOUTH PACIFIC
+#1 MATCH ONLY
+blastn -query 74-ori-contigs.fa -db nt -max_target_seqs 1 -max_hsps 1 -evalue 1e-6 -outfmt '7 qseqid sseqid length ql en slen qstat qend sstart send evalue' -out 74-ori-contigs-blast1.txt -num_threads 4
+
+grep -A1 '# 1 hits found' 74-ori-contigs-blast1.txt > hits.txt
+
+#5 MATCHES
+blastn -query 74-ori-contigs.fa -db nt -max_target_seqs 5 -max_hsps 1 -evalue 1e-6 -outfmt '7 qseqid sseqid length ql en slen qstat qend sstart send evalue' -out 74-ori-contigs-blast1.txt -num_threads 4
