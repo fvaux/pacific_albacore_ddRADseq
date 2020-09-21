@@ -7,8 +7,8 @@ Lists input commands used for STACSK and BWA, and subsequent filtering in VCFtoo
 # maps
 Maps used to select individuals and populations in STACKS runs.
 
-# blacklists
-Blacklists used to exclude certain loci in STACKS runs.
+# excluded loci
+Lists used to exclude certain loci in STACKS runs.
 
 # plink-ld
 Ped and map files used by plink to estimate loci in LD.
