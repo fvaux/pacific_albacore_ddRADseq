@@ -2,7 +2,7 @@
 Commands and input files for population genetic analysis of Pacific Albacore using ddRADseq
 
 # albacore_STACKS_and_filtering
-Lists input commands used for STACSK and BWA, and subsequent filtering in VCFtools, plink, and paralog-finder (HDplot).
+Lists input commands used for STACKS and BWA, and subsequent filtering in VCFtools, plink, and paralog-finder (HDplot).
 
 # maps
 Maps used to select individuals and populations in STACKS runs.
