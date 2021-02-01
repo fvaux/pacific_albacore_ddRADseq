@@ -20,7 +20,7 @@ Maps used to select subsets of individuals for estimating HWP.
 R files for running loci filtering and population genetic analyses (e.g. whoa, adegenet, fsthet). I recommmend viewing original source GitHub pages and tutorials noted in each R file credits.
 
 # Sampling, and genotype and loci fasta files
-Sampling and sequence spreadsheets, genetic data (vcf, genepop, and structure genotype files, and the fasta consensus file for the 84 putatively adaptive loci), and full results for genome scan program and Fst analyses are available from Dryad: 
+Sampling and sequence spreadsheets, genetic data (vcf, genepop, and structure genotype files, and the fasta consensus file for the 84 putatively adaptive loci), and full results for genome scan program and Fst analyses are available from Dryad: https://doi.org/10.5061/dryad.6djh9w103
 
 # Demultiplexed reads
 Demultiplexed forward and reverse DNA sequence reads for the albacore sequenced in this study are openly available on the NCBI sequence read archive (SRA) under: PRJNA579774, http://www.ncbi.nlm.nih.gov/bioproject/579774
